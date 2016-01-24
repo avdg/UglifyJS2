@@ -24,13 +24,36 @@ var FILES = exports.FILES = [
 });
 
 var UglifyJS = exports;
+var positions = {
+    _current: 0
+};
 
 new Function("MOZ_SourceMap", "exports", FILES.map(function(file){
-    return fs.readFileSync(file, "utf8");
+    var content = fs.readFileSync(file, "utf8");
+    var i = 0, c = 1;
+
+    for (; i < content.length; i++) {
+        var p = ["\r","\n","\u2028","\u2029"].indexOf(content[i]);
+        if (p !== -1) {
+            c++;
+
+            if (p === 0 && content[i+1] === "\n") {
+                i++;
+            }
+        }
+    }
+
+    positions[file] = positions._current;
+    positions._current += c + 2;
+
+    return content;
 }).join("\n\n"))(
     require("source-map"),
     UglifyJS
 );
+
+console.log("Positions of files in <anonymous>");
+console.log(positions);
 
 UglifyJS.AST_Node.warn_function = function(txt) {
     console.error("WARN: %s", txt);
