@@ -11,6 +11,7 @@ var FILES = exports.FILES = [
     "../lib/utils.js",
     "../lib/ast.js",
     "../lib/parse.js",
+    "../lib/parser.js",
     "../lib/transform.js",
     "../lib/scope.js",
     "../lib/output.js",
@@ -28,7 +29,7 @@ var positions = {
     _current: 0
 };
 
-new Function("MOZ_SourceMap", "exports", FILES.map(function(file){
+new Function("MOZ_SourceMap", "PEG", "GRAMMAR", "exports", FILES.map(function(file){
     var content = fs.readFileSync(file, "utf8");
     var i = 0, c = 1;
 
@@ -49,6 +50,8 @@ new Function("MOZ_SourceMap", "exports", FILES.map(function(file){
     return content;
 }).join("\n\n"))(
     require("source-map"),
+    require("pegjs"),
+    fs.readFileSync(fs.realpathSync(path.join(path.dirname(__filename), "./grammar.pegjs")), "utf8"),
     UglifyJS
 );
 
