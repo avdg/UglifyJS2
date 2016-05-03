@@ -868,3 +868,26 @@ trivial_boolean_ternary_expressions : {
         f(!(x >= y));
     }
 }
+
+wrongly_optimized: {
+    options = {
+        conditionals: true,
+        booleans: true,
+        evaluate: true
+    };
+    input: {
+        function func() {
+            foo();
+        }
+        if (some_condition() || true) {
+            bar();
+        }
+    }
+    expect: {
+        function func() {
+            foo();
+        }
+        some_condition();
+        bar();
+    }
+}
