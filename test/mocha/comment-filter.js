@@ -42,4 +42,13 @@ describe("comment filters", function() {
 
         assert.strictEqual(ast.print_to_string({comments: f}), "#!Random comment\n//test1\n/*test2*/\n");
     });
+
+    it("Should not be influenced by compute_char_frequency", function() {
+        var ast = UglifyJS.parse("var foo = /*bar*/ false;");
+        ast.figure_out_scope();
+        ast.compute_char_frequency();
+        ast.mangle_names();
+
+        assert.strictEqual(ast.print_to_string({comments: true}), "var foo=/*bar*/false;");
+    });
 });
