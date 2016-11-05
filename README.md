@@ -951,3 +951,13 @@ The `source_map_options` (optional) can contain the following properties:
   [codegen]: http://lisperator.net/uglifyjs/codegen
   [compressor]: http://lisperator.net/uglifyjs/compress
   [parser]: http://lisperator.net/uglifyjs/parser
+
+#### Talking to the file system
+
+`UglifyJS.readFile` and `UglifyJS.writeFile` can be overwritten. This is already
+already done for the nodejs api.
+
+- `UglifyJS.readFile` must be a function. The first parameter will be the file name.
+  The return value is expected to be a utf-8 string.
+- `UglifyJS.writeFile` must be a function. The first parameter will be the file
+  to be written. The second parameter will have the content of that file.
