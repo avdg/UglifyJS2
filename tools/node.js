@@ -42,6 +42,10 @@ UglifyJS.readFile = function(file) {
     return fs.readFileSync(file, "utf8");
 };
 
+UglifyJS.writeFile = function(file, data) {
+    fs.writeFileSync(filename, data, "utf8");
+}
+
 // exports.describe_ast = function() {
 //     function doitem(ctor) {
 //         var sub = {};
@@ -114,41 +118,6 @@ exports.readReservedFile = readReservedFile;
 
 exports.readDefaultReservedFile = function(reserved) {
     return readReservedFile(path.join(__dirname, "domprops.json"), reserved);
-};
-
-exports.readNameCache = function(filename, key) {
-    var cache = null;
-    if (filename) {
-        try {
-            var cache = fs.readFileSync(filename, "utf8");
-            cache = JSON.parse(cache)[key];
-            if (!cache) throw "init";
-            cache.props = UglifyJS.Dictionary.fromObject(cache.props);
-        } catch(ex) {
-            cache = {
-                cname: -1,
-                props: new UglifyJS.Dictionary()
-            };
-        }
-    }
-    return cache;
-};
-
-exports.writeNameCache = function(filename, key, cache) {
-    if (filename) {
-        var data;
-        try {
-            data = fs.readFileSync(filename, "utf8");
-            data = JSON.parse(data);
-        } catch(ex) {
-            data = {};
-        }
-        data[key] = {
-            cname: cache.cname,
-            props: cache.props.toObject()
-        };
-        fs.writeFileSync(filename, JSON.stringify(data, null, 2), "utf8");
-    }
 };
 
 // A file glob function that only supports "*" and "?" wildcards in the basename.
