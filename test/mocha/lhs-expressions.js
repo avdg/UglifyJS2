@@ -26,4 +26,91 @@ describe("Left-hand side expressions", function () {
         assert.equal(expanding_def.name.names[1].TYPE, 'Expansion');
         assert.equal(expanding_def.name.names[1].expression.TYPE, 'SymbolVar');
     });
+
+    it("Parser should use AST_Array for array literals", function() {
+        var ast = uglify.parse('["foo", "bar"]');
+        assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
+        assert(ast.body[0].body instanceof uglify.AST_Array);
+
+        ast = uglify.parse('a = ["foo"]');
+        assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
+
+        assert(ast.body[0].body instanceof uglify.AST_Assign);
+        assert(ast.body[0].body.left instanceof uglify.AST_SymbolRef);
+        assert.equal(ast.body[0].body.operator, "=");
+        assert(ast.body[0].body.right instanceof uglify.AST_Array);
+    });
+
+    it("Parser should use AST_Object for object literals", function() {
+        var ast = uglify.parse('({foo: "bar"})');
+        assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
+        assert(ast.body[0].body instanceof uglify.AST_Object);
+
+        // This example should be fine though
+        ast = uglify.parse('a = {foo: "bar"}');
+        assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
+
+        assert(ast.body[0].body instanceof uglify.AST_Assign);
+        assert(ast.body[0].body.left instanceof uglify.AST_SymbolRef);
+        assert.equal(ast.body[0].body.operator, "=");
+        assert(ast.body[0].body.right instanceof uglify.AST_Object);
+    });
+
+    it("Parser should use AST_Destructuring for array assignment patterns", function() {
+        var ast = uglify.parse('[foo, bar] = [1, 2]');
+        assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
+
+        assert(ast.body[0].body instanceof uglify.AST_Assign);
+        assert(ast.body[0].body.left instanceof uglify.AST_Destructuring);
+        assert.strictEqual(ast.body[0].body.left.is_array, true);
+        assert.equal(ast.body[0].body.operator, "=");
+        assert(ast.body[0].body.right instanceof uglify.AST_Array);
+    });
+
+    it("Parser should use AST_Destructuring for object assignement patterns", function() {
+        var ast = uglify.parse('({a: b, b: c} = {b: "c", c: "d"})');
+        assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
+
+        assert(ast.body[0].body instanceof uglify.AST_Assign);
+        assert(ast.body[0].body.left instanceof uglify.AST_Destructuring);
+        assert.strictEqual(ast.body[0].body.left.is_array, false);
+        assert.equal(ast.body[0].body.operator, "=");
+        assert(ast.body[0].body.right instanceof uglify.AST_Object);
+    });
+
+    it("Parser should be able to handle nested destructuring", function() {
+        var ast = uglify.parse('[{a,b},[d, e, f, {g, h}]] = [{a: 1, b: 2}, [3, 4, 5, {g: 6, h: 7}]]');
+        assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
+
+        assert(ast.body[0].body instanceof uglify.AST_Assign);
+        assert(ast.body[0].body.left instanceof uglify.AST_Destructuring);
+        assert.strictEqual(ast.body[0].body.left.is_array, true);
+        assert.equal(ast.body[0].body.operator, "=");
+        assert(ast.body[0].body.right instanceof uglify.AST_Array);
+
+        assert(ast.body[0].body.left.names[0] instanceof uglify.AST_Destructuring);
+        assert.strictEqual(ast.body[0].body.left.names[0].is_array, false);
+
+        assert(ast.body[0].body.left.names[1] instanceof uglify.AST_Destructuring);
+        assert.strictEqual(ast.body[0].body.left.names[1].is_array, true);
+
+        assert(ast.body[0].body.left.names[1].names[3] instanceof uglify.AST_Destructuring);
+        assert.strictEqual(ast.body[0].body.left.names[1].names[3].is_array, false);
+    });
+
+    it("Should handle spread operator in destructuring", function() {
+        var ast = uglify.parse("[a, b, ...c] = [1, 2, 3, 4, 5]");
+        assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
+
+        assert(ast.body[0].body instanceof uglify.AST_Assign);
+        assert(ast.body[0].body.left instanceof uglify.AST_Destructuring);
+        assert.strictEqual(ast.body[0].body.left.is_array, true);
+        assert.equal(ast.body[0].body.operator, "=");
+        assert(ast.body[0].body.right instanceof uglify.AST_Array);
+
+        assert(ast.body[0].body.left.names[0] instanceof uglify.AST_SymbolRef);
+        assert(ast.body[0].body.left.names[1] instanceof uglify.AST_SymbolRef);
+
+        assert(ast.body[0].body.left.names[2] instanceof uglify.AST_Expansion);
+    });
 });
