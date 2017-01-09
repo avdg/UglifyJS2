@@ -113,4 +113,39 @@ describe("Left-hand side expressions", function () {
 
         assert(ast.body[0].body.left.names[2] instanceof uglify.AST_Expansion);
     });
+
+    it("Should handle default assignments in destructuring", function() {
+        var ast = uglify.parse("({x: v, z = z + 5} = obj);");
+        assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
+
+        assert(ast.body[0].body instanceof uglify.AST_Assign);
+        assert(ast.body[0].body.left instanceof uglify.AST_Destructuring);
+        assert.strictEqual(ast.body[0].body.left.is_array, false);
+        assert.equal(ast.body[0].body.operator, "=");
+        assert(ast.body[0].body.right instanceof uglify.AST_SymbolRef);
+
+        assert(ast.body[0].body.left.names[0].value instanceof uglify.AST_SymbolRef);
+        assert.strictEqual(ast.body[0].body.left.names[0].start.value, "x");
+
+        assert(ast.body[0].body.left.names[1].value instanceof uglify.AST_SymbolRef);
+        assert.strictEqual(ast.body[0].body.left.names[1].start.value, "z");
+
+
+        ast = uglify.parse("[x, y = 5] = foo");
+        assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
+
+        assert(ast.body[0].body instanceof uglify.AST_Assign);
+        assert(ast.body[0].body.left instanceof uglify.AST_Destructuring);
+        assert.strictEqual(ast.body[0].body.left.is_array, true);
+        assert.equal(ast.body[0].body.operator, "=");
+        assert(ast.body[0].body.right instanceof uglify.AST_SymbolRef);
+
+        assert(ast.body[0].body.left.names[0] instanceof uglify.AST_SymbolRef);
+        assert.strictEqual(ast.body[0].body.left.names[0].start.value, "x");
+
+        // Do not change assignments for arrays yet
+        assert(ast.body[0].body.left.names[1] instanceof uglify.AST_Assign);
+        assert(ast.body[0].body.left.names[1].left instanceof uglify.AST_SymbolRef);
+        assert.strictEqual(ast.body[0].body.left.names[1].start.value, "y");
+    });
 });
