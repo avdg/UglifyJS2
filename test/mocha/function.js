@@ -30,8 +30,11 @@ describe("Function", function() {
         assert(destruct2 instanceof uglify.AST_Destructuring);
         assert(destruct3 instanceof uglify.AST_Destructuring);
         assert(destruct4 instanceof uglify.AST_Destructuring);
-        assert(destruct2.names[1] instanceof uglify.AST_Destructuring);
-        assert(destruct4.names[1] instanceof uglify.AST_Destructuring);
+        assert(destruct2.names[1] instanceof uglify.AST_ArrayElement);
+        assert(destruct4.names[1] instanceof uglify.AST_ArrayElement);
+
+        assert(destruct2.names[1].element instanceof uglify.AST_Destructuring);
+        assert(destruct4.names[1].element instanceof uglify.AST_Destructuring);
 
         assert.equal(destruct1.start.value, '{');
         assert.equal(destruct1.end.value, '}');
@@ -66,14 +69,14 @@ describe("Function", function() {
             aAndB[1]);
         assert.deepEqual(
             [
-                destruct2.names[0].TYPE,
-                destruct2.names[0].name
+                destruct2.names[0].element.TYPE,
+                destruct2.names[0].element.name
             ],
             aAndB[0]);
         assert.deepEqual(
             [
-                destruct2.names[1].names[0].TYPE,
-                destruct2.names[1].names[0].name
+                destruct2.names[1].element.names[0].element.TYPE,
+                destruct2.names[1].element.names[0].element.name
             ],
             aAndB[1]);
         assert.strictEqual(typeof destruct3.names[0].key, "string");
@@ -82,14 +85,14 @@ describe("Function", function() {
         assert.strictEqual(destruct3.names[1].key, "b");
         assert.deepEqual(
             [
-                destruct4.names[0].TYPE,
-                destruct4.names[0].name
+                destruct4.names[0].element.TYPE,
+                destruct4.names[0].element.name
             ],
             aAndB[0]);
         assert.deepEqual(
             [
-                destruct4.names[1].names[0].TYPE,
-                destruct4.names[1].names[0].name
+                destruct4.names[1].element.names[0].element.TYPE,
+                destruct4.names[1].element.names[0].element.name
             ],
             aAndB[1]);
 

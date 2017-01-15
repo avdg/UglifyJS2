@@ -12,17 +12,17 @@ describe("Left-hand side expressions", function () {
 
         var nested_def = uglify.parse('var [{x}] = foo').body[0].definitions[0];
 
-        assert.equal(nested_def.name.names[0].names[0].TYPE, 'SymbolVar');
-        assert.equal(nested_def.name.names[0].names[0].name, 'x');
+        assert.equal(nested_def.name.names[0].element.names[0].TYPE, 'SymbolVar');
+        assert.equal(nested_def.name.names[0].element.names[0].name, 'x');
 
         var holey_def = uglify.parse('const [,,third] = [1,2,3]').body[0].definitions[0];
 
         assert.equal(holey_def.name.names[0].TYPE, 'Hole');
-        assert.equal(holey_def.name.names[2].TYPE, 'SymbolConst');
+        assert.equal(holey_def.name.names[2].element.TYPE, 'SymbolConst');
 
         var expanding_def = uglify.parse('var [first, ...rest] = [1,2,3]').body[0].definitions[0];
 
-        assert.equal(expanding_def.name.names[0].TYPE, 'SymbolVar');
+        assert.equal(expanding_def.name.names[0].element.TYPE, 'SymbolVar');
         assert.equal(expanding_def.name.names[1].TYPE, 'Expansion');
         assert.equal(expanding_def.name.names[1].expression.TYPE, 'SymbolVar');
     });
@@ -82,36 +82,48 @@ describe("Left-hand side expressions", function () {
         var ast = uglify.parse('[{a,b},[d, e, f, {g, h}]] = [{a: 1, b: 2}, [3, 4, 5, {g: 6, h: 7}]]');
         assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
 
+        // Check expression
         assert(ast.body[0].body instanceof uglify.AST_Assign);
         assert(ast.body[0].body.left instanceof uglify.AST_Destructuring);
         assert.strictEqual(ast.body[0].body.left.is_array, true);
         assert.equal(ast.body[0].body.operator, "=");
         assert(ast.body[0].body.right instanceof uglify.AST_Array);
 
-        assert(ast.body[0].body.left.names[0] instanceof uglify.AST_Destructuring);
-        assert.strictEqual(ast.body[0].body.left.names[0].is_array, false);
+        // Check types of childs in destructuring
+        assert(ast.body[0].body.left.names[0] instanceof uglify.AST_ArrayElement);
+        assert(ast.body[0].body.left.names[1] instanceof uglify.AST_ArrayElement);
 
-        assert(ast.body[0].body.left.names[1] instanceof uglify.AST_Destructuring);
-        assert.strictEqual(ast.body[0].body.left.names[1].is_array, true);
+        // Inspect childs individually
+        assert(ast.body[0].body.left.names[0].element instanceof uglify.AST_Destructuring);
+        assert.strictEqual(ast.body[0].body.left.names[0].element.is_array, false);
 
-        assert(ast.body[0].body.left.names[1].names[3] instanceof uglify.AST_Destructuring);
-        assert.strictEqual(ast.body[0].body.left.names[1].names[3].is_array, false);
+        assert(ast.body[0].body.left.names[1].element instanceof uglify.AST_Destructuring);
+        assert.strictEqual(ast.body[0].body.left.names[1].element.is_array, true);
+
+        assert(ast.body[0].body.left.names[1].element.names[3] instanceof uglify.AST_ArrayElement);
+        assert(ast.body[0].body.left.names[1].element.names[3].element instanceof uglify.AST_Destructuring);
+        assert.strictEqual(ast.body[0].body.left.names[1].element.names[3].element.is_array, false);
     });
 
     it("Should handle spread operator in destructuring", function() {
         var ast = uglify.parse("[a, b, ...c] = [1, 2, 3, 4, 5]");
         assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
 
+        // Check expression
         assert(ast.body[0].body instanceof uglify.AST_Assign);
         assert(ast.body[0].body.left instanceof uglify.AST_Destructuring);
         assert.strictEqual(ast.body[0].body.left.is_array, true);
         assert.equal(ast.body[0].body.operator, "=");
         assert(ast.body[0].body.right instanceof uglify.AST_Array);
 
-        assert(ast.body[0].body.left.names[0] instanceof uglify.AST_SymbolRef);
-        assert(ast.body[0].body.left.names[1] instanceof uglify.AST_SymbolRef);
-
+        // Check destructuring elements
+        assert(ast.body[0].body.left.names[0] instanceof uglify.AST_ArrayElement);
+        assert(ast.body[0].body.left.names[1] instanceof uglify.AST_ArrayElement);
         assert(ast.body[0].body.left.names[2] instanceof uglify.AST_Expansion);
+
+        // Check destructuring elements that are AST_ArrayElement
+        assert(ast.body[0].body.left.names[0].element instanceof uglify.AST_SymbolRef);
+        assert(ast.body[0].body.left.names[1].element instanceof uglify.AST_SymbolRef);
     });
 
     it("Should handle default assignments in destructuring", function() {
@@ -134,18 +146,21 @@ describe("Left-hand side expressions", function () {
         ast = uglify.parse("[x, y = 5] = foo");
         assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
 
+        // Check expression
         assert(ast.body[0].body instanceof uglify.AST_Assign);
         assert(ast.body[0].body.left instanceof uglify.AST_Destructuring);
         assert.strictEqual(ast.body[0].body.left.is_array, true);
         assert.equal(ast.body[0].body.operator, "=");
         assert(ast.body[0].body.right instanceof uglify.AST_SymbolRef);
 
-        assert(ast.body[0].body.left.names[0] instanceof uglify.AST_SymbolRef);
-        assert.strictEqual(ast.body[0].body.left.names[0].start.value, "x");
+        // Check every array element
+        assert(ast.body[0].body.left.names[0] instanceof uglify.AST_ArrayElement);
+        assert(ast.body[0].body.left.names[0].element instanceof uglify.AST_SymbolRef);
+        assert.strictEqual(ast.body[0].body.left.names[0].element.start.value, "x");
 
-        // Do not change assignments for arrays yet
-        assert(ast.body[0].body.left.names[1] instanceof uglify.AST_Assign);
-        assert(ast.body[0].body.left.names[1].left instanceof uglify.AST_SymbolRef);
+        assert(ast.body[0].body.left.names[1] instanceof uglify.AST_ArrayElement);
+        assert(ast.body[0].body.left.names[1].element instanceof uglify.AST_SymbolRef);
+        assert(ast.body[0].body.left.names[1].default instanceof uglify.AST_Number);
         assert.strictEqual(ast.body[0].body.left.names[1].start.value, "y");
     });
 });
