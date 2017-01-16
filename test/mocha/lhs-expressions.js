@@ -67,7 +67,7 @@ describe("Left-hand side expressions", function () {
         assert(ast.body[0].body.right instanceof uglify.AST_Array);
     });
 
-    it("Parser should use AST_Destructuring for object assignement patterns", function() {
+    it("Parser should use AST_Destructuring for object assignment patterns", function() {
         var ast = uglify.parse('({a: b, b: c} = {b: "c", c: "d"})');
         assert(ast.body[0] instanceof uglify.AST_SimpleStatement);
 
