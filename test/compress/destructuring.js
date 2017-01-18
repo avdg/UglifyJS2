@@ -200,3 +200,13 @@ destructuring_remove_unused_2: {
         }
     }
 }
+
+object_destructuring_may_need_parentheses: {
+    beautify = {
+        ecma: 6
+    }
+    input: {
+        ({a, b} = {a: 1, b: 2});
+    }
+    expect_exact: "({a,b}={a:1,b:2});"
+}
