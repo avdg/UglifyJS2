@@ -238,8 +238,11 @@ describe("Left-hand side expressions", function () {
             assert.throws(execute(input), check);
         }
 
+        // Spreads are not allowed in destructuring array if it's not the last element
+        expect("[...a, ...b] = [1, 2, 3, 4]", "SyntaxError: Spread must the be last element in destructuring array");
+
         // Multiple spreads are not allowed in destructuring array
-        expect("[...a, ...b] = [1, 2, 3, 4]", "SyntaxError: Unexpected token: expand (...)");
+        expect("[...a, ...b] = [1, 2, 3, 4]", "SyntaxError: Spread must the be last element in destructuring array");
 
         // Spread in obvious object pattern
         expect("({...a} = foo)", "SyntaxError: Unexpected token: expand (...)");
