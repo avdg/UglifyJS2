@@ -201,4 +201,53 @@ describe("Left-hand side expressions", function () {
         assert.strictEqual(ast.body[0].body.left.names[0].value.operator, "=");
         assert(ast.body[0].body.left.names[0].value.right instanceof uglify.AST_Number);
     });
+
+    it("Should allow multiple spread in array literals", function() {
+        var ast = uglify.parse("var a = [1, 2, 3], b = [4, 5, 6], joined; joined = [...a, ...b]");
+        assert(ast.body[0] instanceof uglify.AST_Var);
+        assert(ast.body[1] instanceof uglify.AST_SimpleStatement);
+
+        // Check statement containing array with spreads
+        assert(ast.body[1].body instanceof uglify.AST_Assign);
+        assert(ast.body[1].body.left instanceof uglify.AST_SymbolRef);
+        assert.equal(ast.body[1].body.operator, "=");
+        assert(ast.body[1].body.right instanceof uglify.AST_Array);
+
+        // Check array content
+        assert.strictEqual(ast.body[1].body.right.elements.length, 2);
+        assert(ast.body[1].body.right.elements[0] instanceof uglify.AST_Expansion);
+        assert(ast.body[1].body.right.elements[0].expression instanceof uglify.AST_SymbolRef);
+        assert(ast.body[1].body.right.elements[0].expression.name, "a");
+        assert(ast.body[1].body.right.elements[1] instanceof uglify.AST_Expansion);
+        assert(ast.body[1].body.right.elements[1].expression instanceof uglify.AST_SymbolRef);
+        assert(ast.body[1].body.right.elements[1].expression.name, "b");
+    });
+
+    it("Should not allow spread on invalid locations", function() {
+        var expect = function(input, expected) {
+            var execute = function(input) {
+                return function() {
+                    uglify.parse(input);
+                }
+            }
+            var check = function(e) {
+                return e instanceof uglify.JS_Parse_Error &&
+                    e.message === expected;
+            }
+
+            assert.throws(execute(input), check);
+        }
+
+        // Multiple spreads are not allowed in destructuring array
+        expect("[...a, ...b] = [1, 2, 3, 4]", "SyntaxError: Unexpected token: expand (...)");
+
+        // Spread in obvious object pattern
+        expect("({...a} = foo)", "SyntaxError: Unexpected token: expand (...)");
+
+        // Spread in block should not be allowed
+        expect("{...a} = foo", "SyntaxError: Unexpected token: expand (...)");
+
+        // Not in standard yet
+        expect("let foo = {bar: 42}, bar; bar = {...foo}", "SyntaxError: Unexpected token: expand (...)");
+    });
 });
