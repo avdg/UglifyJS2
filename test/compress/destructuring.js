@@ -210,3 +210,42 @@ object_destructuring_may_need_parentheses: {
     }
     expect_exact: "({a,b}={a:1,b:2});"
 }
+
+optimize_assigned_destructuring: {
+    options = {
+        evaluate: true
+    }
+    input: {
+        ({x: v, z = z + 5 + 3} = obj);
+
+    }
+    expect: {
+        ({x: v, z = z + 8} = obj);
+    }
+}
+
+destructuring_with_undefined_as_default_assignment: {
+    options = {
+        evaluate: true
+    }
+    input: {
+        [foo = undefined] = bar;
+        [foo = void 0] = bar;
+    }
+    expect: {
+        [foo] = bar;
+        [foo] = bar;
+    }
+}
+
+destructuring_dont_evaluate_with_undefined_as_default_assignment: {
+    options = {
+        evaluate: false
+    }
+    input: {
+        [foo = undefined] = bar;
+    }
+    expect: {
+        [foo = void 0] = bar;
+    }
+}
