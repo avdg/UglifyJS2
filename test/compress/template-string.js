@@ -266,18 +266,6 @@ enforce_single_quotes_and_evaluate: {
     }
 }
 
-template_evaluate_non_constant_expression: {
-    options = {
-        evaluate: true
-    }
-    input: {
-        var foo = `Result: ${bar + 3 + 4}`;
-    }
-    expect: {
-        var foo = `Result: ${bar + 7}`;
-    }
-}
-
 respect_inline_script: {
     beautify = {
         inline_script: true,
