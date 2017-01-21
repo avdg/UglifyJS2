@@ -189,4 +189,74 @@ describe("arguments", function() {
         assert.strictEqual(content.names[0].operator, "=");
         assert(content.names[0].right instanceof UglifyJS.AST_Number);
     });
+
+    it("Should parse spread correctly", function() {
+        var ast = UglifyJS.parse("function foo(a, b, ...c){}");
+        assert(ast.body[0] instanceof UglifyJS.AST_Defun);
+        assert.strictEqual(ast.body[0].argnames.length, 3);
+
+        // Check parameters
+        assert(ast.body[0].argnames[0] instanceof UglifyJS.AST_SymbolFunarg);
+        assert(ast.body[0].argnames[1] instanceof UglifyJS.AST_SymbolFunarg);
+        assert(ast.body[0].argnames[2] instanceof UglifyJS.AST_Expansion);
+        assert(ast.body[0].argnames[2].expression instanceof UglifyJS.AST_SymbolFunarg);
+
+
+        ast = UglifyJS.parse("function foo([a, b, ...c]){}");
+        assert(ast.body[0] instanceof UglifyJS.AST_Defun);
+        assert.strictEqual(ast.body[0].argnames.length, 1);
+
+        // Check first parameter
+        assert(ast.body[0].argnames[0] instanceof UglifyJS.AST_Destructuring);
+        assert.strictEqual(ast.body[0].argnames[0].is_array, true);
+
+        // Check content first parameter
+        assert(ast.body[0].argnames[0].names[0] instanceof UglifyJS.AST_SymbolFunarg);
+        assert(ast.body[0].argnames[0].names[1] instanceof UglifyJS.AST_SymbolFunarg);
+        assert(ast.body[0].argnames[0].names[2] instanceof UglifyJS.AST_Expansion);
+        assert(ast.body[0].argnames[0].names[2].expression instanceof UglifyJS.AST_SymbolFunarg);
+
+
+        ast = UglifyJS.parse("function foo([a, b, [c, ...d]]){}");
+        assert(ast.body[0] instanceof UglifyJS.AST_Defun);
+        assert.strictEqual(ast.body[0].argnames.length, 1);
+
+        // Check first parameter
+        assert(ast.body[0].argnames[0] instanceof UglifyJS.AST_Destructuring);
+        assert.strictEqual(ast.body[0].argnames[0].is_array, true);
+
+        // Check content outer destructuring array
+        assert(ast.body[0].argnames[0].names[0] instanceof UglifyJS.AST_SymbolFunarg);
+        assert(ast.body[0].argnames[0].names[1] instanceof UglifyJS.AST_SymbolFunarg);
+        assert(ast.body[0].argnames[0].names[2] instanceof UglifyJS.AST_Destructuring);
+        assert.strictEqual(ast.body[0].argnames[0].names[2].is_array, true);
+
+        // Check content nested destructuring array
+        assert.strictEqual(ast.body[0].argnames[0].names[2].names.length, 2);
+        assert(ast.body[0].argnames[0].names[2].names[0] instanceof UglifyJS.AST_SymbolFunarg);
+        assert(ast.body[0].argnames[0].names[2].names[1] instanceof UglifyJS.AST_Expansion);
+        assert(ast.body[0].argnames[0].names[2].names[1].expression instanceof UglifyJS.AST_SymbolFunarg);
+
+
+        ast = UglifyJS.parse("function foo({a: [b, ...c]}){}");
+        assert(ast.body[0] instanceof UglifyJS.AST_Defun);
+        assert.strictEqual(ast.body[0].argnames.length, 1);
+
+        // Check first parameter
+        assert(ast.body[0].argnames[0] instanceof UglifyJS.AST_Destructuring);
+        assert.strictEqual(ast.body[0].argnames[0].is_array, false);
+
+        // Check outer destructuring object
+        assert.strictEqual(ast.body[0].argnames[0].names.length, 1);
+        assert(ast.body[0].argnames[0].names[0] instanceof UglifyJS.AST_ObjectKeyVal);
+        assert.strictEqual(ast.body[0].argnames[0].names[0].key, "a");
+        assert(ast.body[0].argnames[0].names[0].value instanceof UglifyJS.AST_Destructuring);
+        assert.strictEqual(ast.body[0].argnames[0].names[0].value.is_array, true);
+
+        // Check content nested destructuring array
+        assert.strictEqual(ast.body[0].argnames[0].names[0].value.names.length, 2);
+        assert(ast.body[0].argnames[0].names[0].value.names[0] instanceof UglifyJS.AST_SymbolFunarg);
+        assert(ast.body[0].argnames[0].names[0].value.names[1] instanceof UglifyJS.AST_Expansion);
+        assert(ast.body[0].argnames[0].names[0].value.names[1].expression instanceof UglifyJS.AST_SymbolFunarg);
+    });
 });
