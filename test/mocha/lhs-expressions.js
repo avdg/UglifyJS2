@@ -7,17 +7,26 @@ describe("Left-hand side expressions", function () {
 
         assert.equal(decls.body[0].TYPE, 'Var');
         assert.equal(decls.body[0].definitions.length, 2);
+
+        // Item 1
         assert.equal(decls.body[0].definitions[0].name.TYPE, 'Destructuring');
         assert.equal(decls.body[0].definitions[0].value.TYPE, 'SymbolRef');
 
+        // Item 2
+        assert.equal(decls.body[0].definitions[1].name.TYPE, 'Destructuring');
+        assert.equal(decls.body[0].definitions[1].value.TYPE, 'SymbolRef');
+
         var nested_def = uglify.parse('var [{x}] = foo').body[0].definitions[0];
 
-        assert.equal(nested_def.name.names[0].names[0].TYPE, 'SymbolVar');
-        assert.equal(nested_def.name.names[0].names[0].name, 'x');
+        assert.equal(nested_def.name.names[0].names[0].TYPE, 'ObjectKeyVal');
+        assert.equal(nested_def.name.names[0].names[0].value.TYPE, 'SymbolVar');
+        assert.equal(nested_def.name.names[0].names[0].key, 'x');
+        assert.equal(nested_def.name.names[0].names[0].value.name, 'x');
 
         var holey_def = uglify.parse('const [,,third] = [1,2,3]').body[0].definitions[0];
 
         assert.equal(holey_def.name.names[0].TYPE, 'Hole');
+        assert.equal(holey_def.name.names[1].TYPE, 'Hole');
         assert.equal(holey_def.name.names[2].TYPE, 'SymbolConst');
 
         var expanding_def = uglify.parse('var [first, ...rest] = [1,2,3]').body[0].definitions[0];

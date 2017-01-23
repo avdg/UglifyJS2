@@ -73,10 +73,14 @@ describe("arguments", function() {
         assert(ast.body[0].argnames[0] instanceof UglifyJS.AST_Destructuring);
         assert.strictEqual(ast.body[0].argnames[0].is_array, false);
         assert.strictEqual(ast.body[0].argnames[0].names.length, 1);
-        assert(ast.body[0].argnames[0].names[0] instanceof UglifyJS.AST_DefaultAssign);
-        assert(ast.body[0].argnames[0].names[0].left instanceof UglifyJS.AST_SymbolFunarg);
-        assert.strictEqual(ast.body[0].argnames[0].names[0].operator, "=");
-        assert(ast.body[0].argnames[0].names[0].right instanceof UglifyJS.AST_Number);
+        assert(ast.body[0].argnames[0].names[0] instanceof UglifyJS.AST_ObjectKeyVal);
+        assert.strictEqual(ast.body[0].argnames[0].names[0].key, "a");
+
+        // Property a of first argument
+        assert(ast.body[0].argnames[0].names[0].value instanceof UglifyJS.AST_DefaultAssign);
+        assert(ast.body[0].argnames[0].names[0].value.left instanceof UglifyJS.AST_SymbolFunarg);
+        assert.strictEqual(ast.body[0].argnames[0].names[0].value.operator, "=");
+        assert(ast.body[0].argnames[0].names[0].value.right instanceof UglifyJS.AST_Number);
 
 
         ast = UglifyJS.parse("function foo({a: a = 123}) {}");
@@ -89,11 +93,15 @@ describe("arguments", function() {
         assert.strictEqual(ast.body[0].argnames[0].names.length, 1);
 
         // Content destructuring of first argument
-        assert(ast.body[0].argnames[0].names[0] instanceof UglifyJS.AST_DefaultAssign);
-        assert(ast.body[0].argnames[0].names[0].left instanceof UglifyJS.AST_ObjectProperty);
-        assert.strictEqual(ast.body[0].argnames[0].names[0].left.key, "a");
-        assert(ast.body[0].argnames[0].names[0].left.value instanceof UglifyJS.AST_SymbolFunarg);
-        assert(ast.body[0].argnames[0].names[0].right instanceof UglifyJS.AST_Number);
+        assert(ast.body[0].argnames[0].names[0] instanceof UglifyJS.AST_ObjectKeyVal);
+        assert.strictEqual(ast.body[0].argnames[0].names[0].key, "a");
+        assert(ast.body[0].argnames[0].names[0].value instanceof UglifyJS.AST_DefaultAssign);
+
+        // Property a of first argument
+        assert(ast.body[0].argnames[0].names[0].value instanceof UglifyJS.AST_DefaultAssign);
+        assert(ast.body[0].argnames[0].names[0].value.left instanceof UglifyJS.AST_SymbolFunarg);
+        assert.strictEqual(ast.body[0].argnames[0].names[0].value.operator, "=");
+        assert(ast.body[0].argnames[0].names[0].value.right instanceof UglifyJS.AST_Number);
     });
 
     it("Should parse a function containing default assignments in complex destructuring correctly", function() {
@@ -133,12 +141,15 @@ describe("arguments", function() {
         assert.strictEqual(ast.body[0].argnames[0].names[1].is_array, false);
 
         // Check content of second destructuring element (which is the nested destructuring pattern)
-        assert(ast.body[0].argnames[0].names[1].names[0] instanceof UglifyJS.AST_DefaultAssign);
-        assert(ast.body[0].argnames[0].names[1].names[0].left instanceof UglifyJS.AST_ObjectKeyVal);
-        assert.strictEqual(ast.body[0].argnames[0].names[1].names[0].left.key, "b");
-        assert(ast.body[0].argnames[0].names[1].names[0].left.value instanceof UglifyJS.AST_SymbolFunarg);
-        assert.strictEqual(ast.body[0].argnames[0].names[1].names[0].operator, "=");
-        assert(ast.body[0].argnames[0].names[1].names[0].right instanceof UglifyJS.AST_Number);
+        assert(ast.body[0].argnames[0].names[1].names[0] instanceof UglifyJS.AST_ObjectKeyVal);
+        assert.strictEqual(ast.body[0].argnames[0].names[1].names[0].key, "b");
+        assert(ast.body[0].argnames[0].names[1].names[0].value instanceof UglifyJS.AST_DefaultAssign);
+
+        // Property b of second argument
+        assert(ast.body[0].argnames[0].names[1].names[0].value instanceof UglifyJS.AST_DefaultAssign);
+        assert(ast.body[0].argnames[0].names[1].names[0].value.left instanceof UglifyJS.AST_SymbolFunarg);
+        assert.strictEqual(ast.body[0].argnames[0].names[1].names[0].value.operator, "=");
+        assert(ast.body[0].argnames[0].names[1].names[0].value.right instanceof UglifyJS.AST_Number);
 
 
         ast = UglifyJS.parse("function foo({a, b: {b = 123}}){}");
@@ -151,19 +162,23 @@ describe("arguments", function() {
         assert.strictEqual(ast.body[0].argnames[0].names.length, 2);
 
         // Check whole destructuring structure of first argument
-        assert(ast.body[0].argnames[0].names[0] instanceof UglifyJS.AST_SymbolFunarg);
+        assert(ast.body[0].argnames[0].names[0] instanceof UglifyJS.AST_ObjectKeyVal);
+        assert.strictEqual(ast.body[0].argnames[0].names[0].key, "a");
+        assert(ast.body[0].argnames[0].names[0].value instanceof UglifyJS.AST_SymbolFunarg);
         assert(ast.body[0].argnames[0].names[1] instanceof UglifyJS.AST_ObjectKeyVal);
         assert.strictEqual(ast.body[0].argnames[0].names[1].key, "b");
         assert(ast.body[0].argnames[0].names[1].value instanceof UglifyJS.AST_Destructuring);
 
-        // Check content of nested destructuring
+        // Check content of nested destructuring in first parameter
         var content = ast.body[0].argnames[0].names[1].value
         assert.strictEqual(content.is_array, false);
         assert.strictEqual(content.names.length, 1);
-        assert(content.names[0] instanceof UglifyJS.AST_DefaultAssign);
-        assert(content.names[0].left instanceof UglifyJS.AST_SymbolFunarg);
-        assert.strictEqual(content.names[0].operator, "=");
-        assert(content.names[0].right instanceof UglifyJS.AST_Number);
+        assert(content.names[0] instanceof UglifyJS.AST_ObjectKeyVal);
+        assert.strictEqual(content.names[0].key, "b");
+        assert(content.names[0].value instanceof UglifyJS.AST_DefaultAssign);
+        assert(content.names[0].value.left instanceof UglifyJS.AST_SymbolFunarg);
+        assert.strictEqual(content.names[0].value.operator, "=");
+        assert(content.names[0].value.right instanceof UglifyJS.AST_Number);
 
 
         ast = UglifyJS.parse("function foo({a: {b = 123}}){}");
@@ -184,10 +199,12 @@ describe("arguments", function() {
         content = ast.body[0].argnames[0].names[0].value
         assert.strictEqual(content.is_array, false);
         assert.strictEqual(content.names.length, 1);
-        assert(content.names[0] instanceof UglifyJS.AST_DefaultAssign);
-        assert(content.names[0].left instanceof UglifyJS.AST_SymbolFunarg);
-        assert.strictEqual(content.names[0].operator, "=");
-        assert(content.names[0].right instanceof UglifyJS.AST_Number);
+        assert(content.names[0] instanceof UglifyJS.AST_ObjectKeyVal);
+        assert.strictEqual(content.names[0].key, "b");
+        assert(content.names[0].value instanceof UglifyJS.AST_DefaultAssign);
+        assert(content.names[0].value.left instanceof UglifyJS.AST_SymbolFunarg);
+        assert.strictEqual(content.names[0].value.operator, "=");
+        assert(content.names[0].value.right instanceof UglifyJS.AST_Number);
     });
 
     it("Should parse spread correctly", function() {
