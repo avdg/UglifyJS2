@@ -4,7 +4,7 @@ var exec = require("child_process").exec;
 describe("bin/uglifyjs", function () {
     var uglifyjscmd = '"' + process.argv[0] + '" bin/uglifyjs';
     it("should produce a functional build when using --self", function (done) {
-        this.timeout(5000);
+        this.timeout(10000);
 
         var command = uglifyjscmd + ' --self -cm --wrap WrappedUglifyJS';
 
@@ -55,7 +55,7 @@ describe("bin/uglifyjs", function () {
        exec(command, function (err, stdout) {
            if (err) throw err;
 
-           assert.strictEqual(stdout, "var bar=function(){function foo(bar){return bar}return foo}();\n" + 
+           assert.strictEqual(stdout, "var bar=function(){function foo(bar){return bar}return foo}();\n" +
                "//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInRlc3QvaW5wdXQvaXNzdWUtMTMyMy9zYW1wbGUuanMiXSwibmFtZXMiOlsiYmFyIiwiZm9vIl0sIm1hcHBpbmdzIjoiQUFBQSxHQUFJQSxLQUFNLFdBQ04sUUFBU0MsS0FBS0QsS0FDVixNQUFPQSxLQUdYLE1BQU9DIn0=\n");
            done();
        });
