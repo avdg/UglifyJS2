@@ -195,10 +195,26 @@ if_return_8: {
             if (c(e)) return baz();
             fail(e);
         }
+
+        function h(e) {
+            if (a(e)) return foo();
+            else if (b(e)) return bar();
+            else if (c(e)) return baz();
+            else fail(e);
+        }
+
+        function i(e) {
+            if (a(e)) return foo();
+            else if (b(e)) return bar();
+            else if (c(e)) return baz();
+            else fail(e);
+        }
     }
     expect: {
         function f(e){return 2==e?foo():3==e?bar():4==e?baz():void fail(e)}
         function g(e){return a(e)?foo():b(e)?bar():c(e)?baz():void fail(e)}
+        function h(e){return a(e)?foo():b(e)?bar():c(e)?baz():void fail(e)}
+        function i(e){return a(e)?foo():b(e)?bar():c(e)?baz():void fail(e)}
     }
 }
 
