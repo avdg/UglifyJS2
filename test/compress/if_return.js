@@ -170,8 +170,7 @@ if_return_7: {
         }
     }
     expect: {
-        // suboptimal
-        function f(x){return!!x||(foo(),void bar())}
+        function f(x){if(x)return!0;foo(),bar()}
     }
 }
 
