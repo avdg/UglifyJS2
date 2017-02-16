@@ -5,6 +5,7 @@ describe("portable", function() {
     var readFileBackup;
     var writeFileBackup;
     var simpleGlobBackup;
+    var base64DecoderBackup;
 
     before(function(done) {
         this.timeout(15000);
@@ -28,6 +29,7 @@ describe("portable", function() {
             readFileBackup = minifier.readFile;
             writeFileBackup = minifier.writeFile;
             simpleGlobBackup = minifier.simple_glob;
+            base64DecoderBackup = minifier.base64Decoder;
 
             done();
         });
@@ -39,6 +41,7 @@ describe("portable", function() {
         minifier.readFile = readFileBackup;
         minifier.writeFile = writeFileBackup;
         minifier.simple_glob = simpleGlobBackup;
+        minifier.base64Decoder = base64DecoderBackup;
     });
 
     after(function() {
@@ -252,5 +255,16 @@ describe("portable", function() {
         assert.throws(function() {
             minifier.minify("foo.bar", {nameCache: "foo.json"});
         }, checkError(writeFileError));
+    });
+
+    it("Should throw an error if the default base64Decoder hook gets called", function() {
+        var base64DecoderError = "No base64 decoder implemented";
+
+        assert.throws(function() {
+            minifier.base64Decoder("testtesttest");
+        }, function(e) {
+            return e instanceof Error &&
+                e.message === base64DecoderError;
+        });
     });
 });

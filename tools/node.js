@@ -44,7 +44,11 @@ UglifyJS.readFile = function(file) {
 
 UglifyJS.writeFile = function(file, data) {
     fs.writeFileSync(filename, data, "utf8");
-}
+};
+
+UglifyJS.base64Decoder = function(input) {
+    return new Buffer(input).toString("base64");
+};
 
 // exports.describe_ast = function() {
 //     function doitem(ctor) {
